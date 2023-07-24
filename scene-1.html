@@ -15,6 +15,12 @@ var x = d3.scaleBand().domain([0,1,2,3,4,5]).range([0,200]);
 var y = d3.scaleLinear().domain([0,42]).range([200,0]);
 //var h = d3.scaleLinear().domain([0,42]).range([0,200]);
 
+async function init() {
+
+const data = await d3.csv('https://guhaindranil83.github.io/data.csv');
+
+console.log(data);
+
 d3.select('svg')
 .append("g")
  .attr("transform","translate(50,50)")
@@ -35,6 +41,7 @@ d3.select('svg')
 .append("g")
  .attr("transform","translate(50,250)").call(d3.axisBottom(x));
 
+}
 </script>
 
 <button onclick="document.location='index.html'">index</button>
