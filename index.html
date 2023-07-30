@@ -1,11 +1,371 @@
-<html>
-    <body>
-        <p>
-        This is index page.
-        </p>
-        <button onclick="document.location='scene-1.html'">1</button>
-        <button onclick="document.location='scene-2.html'">2</button>
-        <button onclick="document.location='scene-3.html'">3</button>
-    </body>
+<!DOCTYPE html>
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<script src="https://d3js.org/d3-array.v2.min.js"></script>
+<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
 
+<button onclick="document.location='index.html'" autofocus>scene-1</button>
+<button onclick="document.location='scene-2.html'" autofocus>scene-2</button>
+<button onclick="document.location='scene-3.html'" autofocus>scene-3</button>
+
+<style> 
+rect {stroke: black; opacity: .8;}
+button {
+    background-color: gray; 
+    border: 2px solid darkgray; 
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+  }
+  div.tooltip {
+     position: absolute;
+     text-align: left;
+     padding: .5rem;
+     background: white;
+     color: gray;
+     border: 1px solid #313639;
+     border-radius: 8px;
+     pointer-events: none;
+     font-size: 16px;
+}
+
+
+
+</style>
+<body>
+    <p style="font-size:24px;"> 
+      Scene-1 : Covid-19 Death Toll within United States. Which age group receive the most fatality? What is most common medical condition involved in covid death?   
+    </p>
+    <p>First bar chart zooms into the US provisional data on covid deaths and break down by age group to understand the highest and least effected population due to covid-19 deaths. 77% of deaths are within 65+ age group, only 1% of deaths reported within 0-34 age group showing kids and young adults were not severely effected.</p>
+    <p>Second bar chart looks into different medical conditions involved in deaths due to Covid-19. With about 39% of inconclsive data about underlying medical conditions, it can be observed Resiporatory, Circulary diseases has been the most common conditions for covid deaths. </p>
+    <p> => Try hover over the bars to see the percentage breahdowns. </p>
+
+<svg width=800 height=600>
+</svg>
+
+<script>
+//<style> rect {fill: lightblue; stroke: black; }</style>
+// const data = d3.csv('https://guhaindranil83.github.io/data.csv');
+
+// D3v5 reads data asynchronously using ES6 promises, so d3.csv creates a promise and reads in the data. 
+// We build up the data array dropping the series column. When promise of d3.csv is fulfilled 
+// (reading is complete), the then executes the anonymous function holding the nesting code.
+// Note: date: d.Date will leave it as a string, call new Date(d.Date) to create a date object, 
+// like so: date: new Date(d.Date)
+
+//async function init()
+
+ // add a div for tooltip 
+ var div = d3.select("body").append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 0);
+
+{
+  var data = [];
+  var data1 = [];
+  var data2 = [];
+     d3.csv("data.csv", function(d) {
+       data.push({
+         age: d.age,
+         conditiongroup: d.conditiongroup,
+         deaths: +d.deaths
+       }); 
+     }).then(function(d) {
+      console.log(data);
+       var agearray = d3.nest()
+                      .key(function(k)  { return k.age; })
+                      .rollup(function(k) { return d3.sum(k, function(g) {return g.deaths; })})
+                      .entries(data);        
+      
+      data1 = agearray.splice(0,7); //dropping all ages filter
+
+      data1.forEach(function(d) {
+        d.age = d.key;
+        d.totdeaths = d.value;
+      });
+
+      data1.sort(function(x, y){
+          return d3.descending(x.totdeaths, y.totdeaths);
+      });
+
+      var condgrparray = d3.nest()
+                      .key(function(k)  { return k.conditiongroup; })
+                      .key(function(k)  { return k.age; })
+                      .rollup(function(k) { return d3.sum(k, function(g) {return g.deaths; })})
+                      .entries(data);  
+                      
+      data2 = condgrparray;
+
+      data2.forEach(function(d) {
+        d.conditiongroup = d.key;
+        temp = d.values;
+        d.subagegroup = temp.splice(0,7);
+        d.totdeaths = 0;
+        d.subagegroup.forEach(function(k) {
+            d.totdeaths = d.totdeaths + (+k.value);
+
+        }); 
+
+      data2.sort(function(x, y){
+          return d3.descending(x.totdeaths, y.totdeaths);
+      });
+
+    });
+     
+      console.log(data1);
+      console.log(data2);
+
+// https://www.heavy.ai/blog/12-color-palettes-for-telling-better-stories-with-your-data
+
+//var color = ["#0000b3", "#0010d9", "#0020ff", "#0040ff", "#0060ff", "#0080ff", "#009fff"] 
+var color = ["#e27c7c", "#a86464", "#6d4b4b", "#503f3f", "#333333", "#3c4e4b", "#466964"]
+var color1 = ["#619ED6", "#6BA547", "#F7D027", "#E48F1B", "#B77EA3", "#E64345", "#60CEED", "#9CF168", "#F7EA4A", "#FBC543", "#FFC9ED"] //, "#E6696E"}
+//var color = ["#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45"]
+
+// var x = d3.scaleBand().domain(data.map(function(d) { return d.age; })).range([0,400]);
+// var y = d3.scaleLinear().domain([0, d3.max(data, function(d) { return d.totdeaths; })]).range([400,0]);
+var y = d3.scaleBand().domain(data1.map(function(d) { return d.age; })).range([0,200]);
+var y_label = d3.scaleBand().domain(data1.map(function(d) { return ('Age ' + d.age); })).range([0,200]);
+var x = d3.scaleLinear().domain([0, d3.max(data1, function(d) { return d.totdeaths; })]).range([0,400]);
+var x_tot = d3.sum(data2, function(d) { return d.totdeaths; });
+
+var y1 = d3.scaleBand().domain(data2.map(function(d) { return d.conditiongroup; })).range([0,200]);
+//var y_label = d3.scaleBand().domain(data.map(function(d) { return ('Age ' + d.age); })).range([0,400]);
+var x1 = d3.scaleLinear().domain([0, d3.max(data2, function(d) { return d.totdeaths; })]).range([0,400]);
+var x1_tot = d3.sum(data2, function(d) { return d.totdeaths; });
+
+
+  //***** Bar Chart by medical condition
+
+d3.select('svg')
+.append("g")
+ .attr("transform","translate(150,310)")
+  .selectAll('rect')
+  .data(data2)
+  .enter()
+  .append('rect')
+    .attr('y',function(d) { return y1(d.conditiongroup);})
+    .attr('height',y1.bandwidth())
+    .attr('width',function(d) {return x1(d.totdeaths);})
+    .attr("fill",function(d,i) {return color1[i];})
+    .on('mouseover', function (d, i) {
+              d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '.65');
+              div.transition()
+               .duration(50)
+               .style("opacity", 1);
+                  let num = (Math.round(((d.totdeaths / x1_tot) * 100), 2)).toString() + '%';
+              div.html("% of Deaths: " + num)
+               .style("left", (d3.event.pageX + 10) + "px")
+               .style("top", (d3.event.pageY - 15) + "px")
+          })
+          .on('mouseout', function (d, i) {
+              d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '1');
+              div.transition()
+               .duration('50')
+               .style("opacity", 0);
+          });
+
+d3.select('svg')
+// .append("g")
+//  .attr("transform","translate(500,50)")
+ .selectAll('text')
+  .data(data2)
+  .enter()
+  .append('text')
+    .attr('x',function(d,i) {return (x1(d.totdeaths) + 160) ;})
+    // .attr('x',510).attr('y',50)
+    .attr('y',function(d,i) { return (y1(d.conditiongroup) + 311 + (y1.bandwidth()/2)) ;})
+    .style("text-anchor", "right")
+    .style("font-size", "80%")
+    .text(function(d) {return (d.totdeaths + ' deaths') ;});
+
+//.attr("fill",function(d,i) {return color[i];});
+
+d3.select('svg')
+.append("g")
+ .attr("transform","translate(150,310)").call(d3.axisLeft(y1));
+
+d3.select('svg')
+.append("g")
+ .attr("transform","translate(150,510)").call(d3.axisBottom(x1).tickValues([500000,1000000,1500000,2000000]).tickFormat(d3.format("~s")));
+
+d3.select('svg')
+.append("text")
+  .attr("transform", "translate(300,300)")
+  .style("text-anchor", "middle")
+  .style("font-size", "80%")
+  .text("Covid-19 Deaths by Medical condition ");
+
+//******** Bar Chart by age band
+
+d3.select('svg')
+.append("g")
+ .attr("transform","translate(150,60)")
+  .selectAll('rect')
+  .data(data1)
+  .enter()
+  .append('rect')
+    .attr('y',function(d,i) { return y(d.age);})
+    .attr('height',y.bandwidth())
+    .attr('width',function(d,i) {return x(d.totdeaths);})
+    .attr("fill",function(d,i) {return color[i];})
+    .on('mouseover', function (d, i) {
+              d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '.85');
+              div.transition()
+               .duration(50)
+               .style("opacity", 1);
+               let num = (Math.round(((d.totdeaths / x_tot) * 100), 2)).toString() + '%';
+              div.html("% of Deaths: " + num )
+               .style("left", (d3.event.pageX + 10) + "px")
+               .style("top", (d3.event.pageY - 15) + "px")
+          })
+          .on('mouseout', function (d, i) {
+              d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '1');
+              div.transition()
+               .duration('50')
+               .style("opacity", 0);
+          });
+
+d3.select('svg')
+.append("g")
+ .attr("transform","translate(150,60)")
+  .selectAll('text')
+  .data(data1)
+  .enter()
+  .append('text')
+    .attr('x',function(d,i) {return (x(d.totdeaths) + 10) ;})
+    .attr('y',function(d,i) { return (y(d.age) + (y.bandwidth()/2)) ;})
+    .style("text-anchor", "right")
+    .style("font-size", "80%")
+    .text(function(d) {return (d.totdeaths + ' deaths') ;});
+
+d3.select('svg')
+.append("g")
+ .attr("transform","translate(150,60)").call(d3.axisLeft(y_label));
+
+d3.select('svg')
+.append("g")
+ .attr("transform","translate(150,260)").call(d3.axisBottom(x).tickValues([1000000,2000000,3000000,4000000]).tickFormat(d3.format("~s")));
+
+d3.select('svg')
+.append("text")
+  .attr("transform", "translate(300,50)")
+  .style("text-anchor", "middle")
+  .style("font-size", "80%")
+  .text("Covid-19 Deaths by Age band ");
+
+
+
+   // Features of the annotation
+   const annotations1 = [
+    {
+      note: {
+        label: "77% of Total deaths are in older people of age group 65 and above. Childrens and kids received least fatality due to covid (1% of total deaths).",
+        bgPadding: 1,
+        //wrap: 30
+        //title: "Annotation title"
+      },
+      connector: {
+            end: "arrow", // none, or arrow or dot
+            type: "line", // Line or curve
+            //points: 3,      //Number of break in the curve
+            lineType : "horizontal"
+      },
+      x: 550, y: 80, dy: 10, dx: 10,
+      color: "gray"
+      // type: d3.annotationCalloutCircle,
+      // subject: { radius: 30, radiusPadding: 1 }
+      // type: d3.annotationCalloutRect,
+      // subject: { width: 10, height: 20}
+      
+    }
+  ];
+  
+  // Add annotation to the chart
+  const makeAnnotations1 = d3.annotation()
+    .annotations(annotations1);
+
+  document.fonts.ready.then(function () {
+          d3.select("svg")
+           .append("g")
+           .attr("class", "annotation-group")
+           .style("font-size", "80%")
+           .call(makeAnnotations1);
+         });
+
+
+  // Features of the annotation
+  const annotations2 = [
+    {
+      note: {
+        label: "The Top 3 medical conditions involved in covid death are - Respiratory diseases, Circulary diseases and Diabetes. 27% of deaths are reported having Covid-19 and 12% of deaths are reported as Other are inconclusive.  ",
+        //title: "Annotation title"
+      },
+      connector: {
+            end: "arrow", // none, or arrow or dot
+            type: "line", // Line or curve
+            //points: 3,      //Number of break in the curve
+            lineType : "horizontal"
+      },
+      x: 560, y: 350, dy: 5, dx: 10,
+      color: "gray",
+      //type: d3.annotationCalloutCircle,
+      //subject: { radius: 30, radiusPadding: 1 }
+    }
+  ];
+  
+  // Add annotation to the chart
+  const makeAnnotations2 = d3.annotation()
+    .annotations(annotations2);
+
+  document.fonts.ready.then(function () {
+          d3.select("svg")
+           .append("g")
+           .attr("class", "annotation-group")
+           .style("font-size", "80%")
+           .call(makeAnnotations2);
+         });
+
+  
+
+
+// // *******************************************************
+// d3.select('svg')
+// .append("g")
+//  .attr("transform","translate(100,50)")
+//   .selectAll('rect')
+//   .data(data)
+//   .enter()
+//   .append('rect')
+//     .attr('x',function(d,i) {return x(d.age);})
+//     .attr('y',function(d,i) { return y(d.totdeaths);})
+//     .attr('width',x.bandwidth())
+//     .attr('height',function(d,i) {return 400-y(d.totdeaths);})
+//     .attr("fill",function(d,i) {return color[i];});
+
+// d3.select('svg')
+// .append("g")
+//  .attr("transform","translate(100,50)").call(d3.axisLeft(y));
+
+// d3.select('svg')
+// .append("g")
+//  .attr("transform","translate(100,450)").call(d3.axisBottom(x));
+//*********************************************************
+
+});
+
+}
+</script>
+</body>
 </html>
+

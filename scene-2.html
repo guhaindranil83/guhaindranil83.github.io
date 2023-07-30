@@ -1,11 +1,471 @@
-<html>
-    <body>
-        <p>
-        This is Scene 2.
-        </p>
-        <button onclick="document.location='index.html'">index</button>
-        <button onclick="document.location='scene-1.html'">1</button>
-        <button onclick="document.location='scene-3.html'">3</button>
-    </body>
+
+<!DOCTYPE html>
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<script src="https://d3js.org/d3-array.v2.min.js"></script>
+<script src="https://unpkg.com/d3-simple-slider"></script>
+<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+
+<button onclick="document.location='index.html'" autofocus>scene-1</button>
+<button onclick="document.location='scene-2.html'" autofocus>scene-2</button>
+<button onclick="document.location='scene-3.html'" autofocus>scene-3</button>
+
+<style> 
+    rect {stroke: black; }
+    button {
+    background-color: gray; 
+    border: 2px solid darkgrey; 
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+  }
+
+  div.tooltip {
+     position: absolute;
+     text-align: left;
+     padding: .5rem;
+     background: white;
+     color: gray;
+     border: 1px solid #313639;
+     border-radius: 8px;
+     pointer-events: none;
+     font-size: 16px;
+}
+ 
+</style>
+
+<body>
+  <p style="font-size:24px;"> 
+    Scene-2 : How United States administered vaccines to encounter covid-19 over the the covid timeline between Jan 2020 to June 2023?   
+  </p>
+  <p> We plotted the total count of vaccines administered for all states within USA for each month between Jan 2020 and June 2023. This shows the trend and it can be observed 70% of total vaccines were adminsitered during the first half of covid timeline, however delta varriants caused a significant deaths between July to April 2022, post April 2022 the death tolls started flattening out. </p>
+  <p> Second chart plots the monthly death counts over covid time line to draw a comparative analysis between vaccines admisnietred vs deaths. See the annotations for more details.</p>
+  <p> => Try hover over the scatter plots to see the exact value of the coordinate. </p>
+<svg width=800 height=600>
+</svg>
+
+<script>
+
+var x_scale = d3.scaleTime().domain([new Date(2020,0,1), new Date(2023,6,1)]).range([0,700]);
+
+ // add a div for tooltip 
+var div = d3.select("body").append("div")
+          .attr("class", "tooltip")
+          .style("opacity", 0);
+
+{
+  
+  var data1 = [];
+     d3.csv("vaccinedata.csv", function(d) {
+       data1.push({
+         date: d.date,
+         state: d.state,
+         daily: +d.daily,
+         cummulative: +d.cummulative
+       }); 
+     }).then(function(d) {
+     
+        var parseTime = d3.timeParse("%m/%d/%y");
+        var parsedate = d3.timeFormat("%Y-%m-%d");
+
+        var stateArray = ['United States','Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+
+        data1 = rollupdaily(data1);
+        console.log(data1);
+        drawChart(data1);
+
+      function rollupdaily(data) {
+            
+            var newarray = d3.nest()
+                      .key(function(k)  { return k.date; })
+                      .rollup(function(k) { return d3.sum(k, function(g) {return g.daily; })})
+                      .entries(data);
+      
+            data = newarray;
+
+            data.forEach(function(d) {
+                d.date = parseTime(d.key);
+                d.count = d.value;
+            });
+
+            data.sort(function(x, y){
+              return d3.ascending(x.date, y.date);
+            });
+      
+            return data;
+       }
+
+
+      function drawChart(data) {  
+
+        var x = d3.scaleBand().domain(data.map(function(d) { return d.date; })).range([0,700]);
+        var y = d3.scaleLinear().domain([0, d3.max(data, function(d) { return d.count; })]).range([200,0]);
+        
+        d3.select('svg')
+          .append("g").attr("transform","translate(50,50)")
+          .selectAll("circle")
+          .data(data)
+          .enter()
+          .append("circle")
+            .attr("cx", function (d,i) { return x(d.date); } )
+            .attr("cy", function (d,i) { return y(d.count); } )
+            .attr("r", 4 )
+            .style("fill", "green")
+          .on('mouseover', function (d, i) {
+              d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '.85');
+              div.transition()
+               .duration(50)
+               .style("opacity", 1);
+                  // let num = (Math.round((d.value / d.data.all) * 100)).toString() + '%';
+              div.html("Total Vaccines Administered: " + d.count + "<br> As Of: " + parsedate(d.date) )
+               .style("left", (d3.event.pageX + 10) + "px")
+               .style("top", (d3.event.pageY - 15) + "px")
+          })
+          .on('mouseout', function (d, i) {
+              d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '1');
+              div.transition()
+               .duration('50')
+               .style("opacity", 0);
+          });
+
+
+        var valueline = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.count); });
+
+        d3.select('svg')
+            .append("g")
+            .attr("transform","translate(50,50)")
+                .append("path")
+                    .attr("class", "line")
+                    .attr("d", valueline(data))
+                    .style("fill", "none")
+                    .style("stroke", "green")
+                    .style("stroke-width", "2");
+
+        d3.select('svg')
+        .append("g")
+        .attr("transform","translate(50,50)")
+        .attr("id","yAxis")
+        .call(d3.axisLeft(y).tickFormat(d3.format("~s")));
+
+        d3.select('svg')
+        .append("g")
+        .attr("transform","translate(50,250)")
+        .attr("id","xAxis")
+        .call(d3.axisBottom(x_scale))
+        // .tickFormat(d3.timeFormat("%Y-%b")))
+        .selectAll("text")	
+                .style("text-anchor", "end")
+                .attr("dx", "-.8em")
+                .attr("dy", ".15em")
+                .attr("transform", "rotate(-35)");
+
+        d3.select('svg')
+          .append("text")
+            .attr("transform", "translate(350,300)")
+            .style("text-anchor", "middle")
+            .style("font-size", "100%")
+            .text("Monthly Total Vaccines Administered plotted over Covid-19 timeline");
+
+
+      }
+
+
+});
+
+}
+
+{
+  
+  var data2 = [];
+     d3.csv("data.csv", function(d) {
+       data2.push({
+         date: d.enddate,
+         deaths: +d.deaths,
+         state: d.state,
+         age: d.age
+       }); 
+     }).then(function(d) {
+     
+        var parseTime = d3.timeParse("%m/%d/%y");
+        var parsedate = d3.timeFormat("%Y-%m-%d");
+
+        // List of groups (here I have one group per column)
+        var stateArray = ['United States','Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+        
+        data2 = data2.filter(function(d){ return d.state == "United States" });
+
+        data2 = data2.filter(function(d){ return d.age == "All Ages" });
+
+        console.log(data2);
+        data2 = rollupdeaths(data2);
+        console.log(data2);
+        
+        drawChart(data2);
+
+       function rollupdeaths(data) {
+            
+            var newarray = d3.nest()
+                      .key(function(k)  { return k.date; })
+                      .rollup(function(k) { return d3.sum(k, function(g) {return g.deaths; })})
+                      .entries(data);
+      
+            data = newarray;
+
+            data.forEach(function(d) {
+                d.date = parseTime(d.key);
+                //d.enddate = d.key;
+                d.count = d.value;
+            });
+
+            data.sort(function(x, y){
+              return d3.ascending(x.date, y.date);
+            });
+      
+            return data;
+       }
+
+      
+
+      function drawChart(data) {  
+
+        //data = this.data;
+        var x = d3.scaleBand().domain(data.map(function(d) { return d.date; })).range([0,700]);
+        //var x = d3.scaleTime().domain(data.map(function(d) { return parsedate(d.enddate); })).range([0, 800]);
+        var y = d3.scaleLinear().domain([0, d3.max(data, function(d) { return d.count; })]).range([200,0]);
+        
+        d3.select('svg')
+          .append("g").attr("transform","translate(50,310)")
+          .selectAll("circle")
+          .data(data)
+          .enter()
+          .append("circle")
+            .attr("cx", function (d,i) { return x(d.date); } )
+            .attr("cy", function (d,i) { return y(d.count); } )
+            .attr("r", 4 )
+            .style("fill", "#e27c7c")
+          .on('mouseover', function (d, i) {
+              d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '.85');
+              div.transition()
+               .duration(50)
+               .style("opacity", 1);
+                  // let num = (Math.round((d.value / d.data.all) * 100)).toString() + '%';
+              div.html("Deaths: " + d.count + "<br> As Of Date: " + parsedate(d.date) )
+               .style("left", (d3.event.pageX + 10) + "px")
+               .style("top", (d3.event.pageY - 15) + "px")
+          })
+          .on('mouseout', function (d, i) {
+              d3.select(this).transition()
+               .duration('50')
+               .attr('opacity', '1');
+              div.transition()
+               .duration('50')
+               .style("opacity", 0);
+          });
+
+
+        var valueline = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.count); });
+
+        d3.select('svg')
+            .append("g")
+            .attr("transform","translate(50,310)")
+                .append("path")
+                    .attr("class", "line")
+                    .attr("d", valueline(data))
+                    .style("fill", "none")
+                    .style("stroke", "#a86464")
+                    .style("stroke-width", "2");
+
+        d3.select('svg')
+        .append("g")
+        .attr("transform","translate(50,310)")
+        .attr("id","yAxis")
+        .call(d3.axisLeft(y).tickFormat(d3.format("~s")));
+
+        d3.select('svg')
+        .append("g")
+        .attr("transform","translate(50,510)")
+        .attr("id","xAxis")
+        .call(d3.axisBottom(x_scale))
+        // .tickFormat(d3.timeFormat("%Y-%b")))
+        .selectAll("text")	
+                .style("text-anchor", "end")
+                .attr("dx", "-.8em")
+                .attr("dy", ".15em")
+                .attr("transform", "rotate(-35)");
+
+        d3.select('svg')
+          .append("text")
+            .attr("transform", "translate(350,560)")
+            .style("text-anchor", "middle")
+            .style("font-size", "100%")
+            .text("Monthly Total Deaths plotted over covid-19 timeline");
+
+
+      }
+
+
+});
+
+// Features of the annotation
+const annotations1 = [
+          {
+            note: {label: "US administered most vaccinations during the first half of covid however the total death counts could not be controlled until April 2022. Total count of vaccinations administered by US as of May 2023 is 13,033,446 (13M)", bgPadding: 1,
+            //title: "Jan 2020" 
+                  }, 
+            connector: {
+            end: "arrow", // none, or arrow or dot
+            type: "line", // Line or curve
+            //points: 3,      //Number of break in the curve
+            lineType : "horizontal"
+                  }, 
+            x: 350, y: 150, dy: -10, dx: 200, color: "gray",
+          }
+        ];
+  
+        // Add annotation to the chart
+        const makeAnnotations1 = d3.annotation()
+          .annotations(annotations1);
+
+        document.fonts.ready.then(function () {
+          d3.select("svg")
+           .append("g")
+           .attr("class", "annotation-group")
+           .style("font-size", "70%")
+           .call(makeAnnotations1);
+         });
+
+         // Features of the annotation
+      const annotations2 = [
+          {
+            note: {label: "Death peaks at the initial wave ", wrap: 50, bgPadding: 1,
+            //title: "Jan 2020" 
+                  }, 
+            connector: {
+            end: "arrow", // none, or arrow or dot
+            type: "line", // Line or curve
+            //points: 3,      //Number of break in the curve
+            lineType : "horizontal"
+                  }, 
+            x: 110, y: 400, dy: -10, dx: 10, color: "gray",
+          }
+        ];
+  
+        // Add annotation to the chart
+        const makeAnnotations2 = d3.annotation()
+          .annotations(annotations2);
+
+        document.fonts.ready.then(function () {
+          d3.select("svg")
+           .append("g")
+           .attr("class", "annotation-group")
+           .style("font-size", "80%")
+           .call(makeAnnotations2);
+         });
+
+         // Features of the annotation
+      const annotations3 = [
+          {
+            note: {label: "Death peaks during alpha variant ", wrap: 50, bgPadding: 1,
+            //title: "Jan 2020" 
+                  }, 
+            connector: {
+            end: "arrow", // none, or arrow or dot
+            type: "line", // Line or curve
+            //points: 3,      //Number of break in the curve
+            lineType : "horizontal"
+                  }, 
+            x: 260, y: 320, dy: 10, dx: 10, color: "gray",
+          }
+        ];
+  
+        // Add annotation to the chart
+        const makeAnnotations3 = d3.annotation()
+          .annotations(annotations3);
+
+        document.fonts.ready.then(function () {
+          d3.select("svg")
+           .append("g")
+           .attr("class", "annotation-group")
+           .style("font-size", "80%")
+           .call(makeAnnotations3);
+         });
+
+         // Features of the annotation
+      const annotations4 = [
+          {
+            note: {label: "Death peaks during delta variant ", wrap: 80, bgPadding: 1,
+            //title: "Jan 2020" 
+                  }, 
+            connector: {
+            end: "arrow", // none, or arrow or dot
+            type: "line", // Line or curve
+            //points: 3,      //Number of break in the curve
+            lineType : "horizontal"
+                  }, 
+            x: 460, y: 350, dy: 10, dx: 10, color: "gray",
+          }
+        ];
+  
+        // Add annotation to the chart
+        const makeAnnotations4 = d3.annotation()
+          .annotations(annotations4);
+
+        document.fonts.ready.then(function () {
+          d3.select("svg")
+           .append("g")
+           .attr("class", "annotation-group")
+           .style("font-size", "80%")
+           .call(makeAnnotations4);
+         });
+
+         // Features of the annotation
+      const annotations5 = [
+          {
+            note: {label: "Death flattened out after 2022 October, during this period active variant was Omicron which is relatively less fatal. ", wrap: 80, bgPadding: 1,
+            //title: "Jan 2020" 
+                  }, 
+            connector: {
+            end: "arrow", // none, or arrow or dot
+            type: "line", // Line or curve
+            //points: 3,      //Number of break in the curve
+            lineType : "horizontal"
+                  }, 
+            x: 650, y: 460, dy: -10, dx: 10, color: "gray",
+          }
+        ];
+  
+        // Add annotation to the chart
+        const makeAnnotations5 = d3.annotation()
+          .annotations(annotations5);
+
+        document.fonts.ready.then(function () {
+          d3.select("svg")
+           .append("g")
+           .attr("class", "annotation-group")
+           .style("font-size", "80%")
+           .call(makeAnnotations5);
+         });
+
+
+
+}
+
+
+</script>
+
+
+</body>
 
 </html>
