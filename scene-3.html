@@ -12,8 +12,9 @@
 <style> 
     rect {stroke: black; }
     button {
-    background-color: gray; 
+    background-color: #6c8c86; 
     border: 2px solid black; 
+    border-radius: 12px;
     color: white;
     padding: 15px 32px;
     text-align: center;
@@ -36,26 +37,30 @@
 </style>
 
 //<!-- Initialize a select button -->
+<label style="color: 	#293f95"> Choose a State:           </label>
 <select name="State" id="selectButton1" autofocus></select>
-<label for="selectButton1"> Choose a State:           </label>
 
+<label style="color:	#293f95"> Choose Age Group:           </label>
 <select name="Age"   id="selectButton2" autofocus></select>
-<label for="selectButton2"> Choose Age Group:           </label>
+
 
 
 <body>
-    <p style="font-size:24px;"> 
+    <h2 style="font-size:18px; color: #444444";> 
         Scene-3 : This is interactive slide where user can select any state within United States and any age band to narrow the focus area and look at the trend chart for the covid deaths between Jan 2020 until June 2023. Default view includes all states and all age group. 
+    </h2>
+    <p style="color: #293f95">
+          => Use the Date slider below to set a date range to take a focused look over a specific timeline. 
     </p>
-    <p>
-          => Use the Date slider below to set a date range to take a focused look over a specific timeline. The annotations over the date slider are provided which highlights important events related to covid-19 to guide user what time line may be interesting to research into the given data.
+    <p style="color:	#293f95">
+          => The annotations over the date slider are provided which highlights important events related to covid-19 to guide user what time line may be interesting to research into the given data.
     </p>
-    <p>
+    <p style="color: #293f95">
           => Try hover over the scatter plots to see the exact cooridnate. 
     </p>  
 
-<svg width=800 height=600>
-</svg>
+    <svg width=800 height=600 style="background: #e3e6e5";>
+    </svg>
 
 
 <script>
@@ -106,6 +111,7 @@
                 .append('option')
                 .text(function (d) { return d; }) // text showed in the menu
                 .attr("value", function (d) { return d; }); // corresponding value returned by the button
+                
 
         // add the options to the button
         d3.select("#selectButton2")
@@ -125,7 +131,7 @@
         .tickFormat(d3.timeFormat('%Y-%b'))
         .ticks(12)
         .default([d3.min(data, d => d.enddate), d3.max(data, d => d.enddate)])
-        .fill('#466964');
+        .fill('#293f95');
       
 
         d3.select('svg')
@@ -263,7 +269,7 @@
           .append("circle")
             .attr("cx", function (d,i) { return x(d.enddate); } )
             .attr("cy", function (d,i) { return y(d.deaths); } )
-            .attr("r", 4 )
+            .attr("r", 2 )
             .style("fill", "#e27c7c")
   
           .on('mouseover', function (d, i) {
@@ -300,7 +306,7 @@
                     .attr("d", valueline(data))
                     .style("fill", "none")
                     .style("stroke", "#a86464")
-                    .style("stroke-width", "2");
+                    .style("stroke-width", "1");
 
                 // .on('mouseover', function (d, i) {
                 //   d3.select(this).transition()
@@ -360,7 +366,7 @@
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-            x: 50, y: 160, dy: -10, dx: 10, color: "gray",
+            x: 50, y: 160, dy: -10, dx: 10, color: "#444444",
           }
         ];
   
@@ -388,7 +394,7 @@
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-            x: 140, y: 160, dy: -10, dx: 10, color: "gray",
+            x: 140, y: 160, dy: -10, dx: 10, color: "#444444",
           }
         ];
   
@@ -416,7 +422,7 @@
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-                  x: 250, y: 160, dy: -10, dx: 10, color: "gray",
+                  x: 250, y: 160, dy: -10, dx: 10, color: "#444444",
           }
         ];
   
@@ -444,7 +450,7 @@
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-                  x: 350, y: 160, dy: -10, dx: 10, color: "gray",
+                  x: 350, y: 160, dy: -10, dx: 10, color: "#444444",
           }
         ];
   
@@ -472,7 +478,7 @@
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-                  x: 400, y: 160, dy: -10, dx: 10, color: "gray",
+                  x: 400, y: 160, dy: -10, dx: 10, color: "#444444",
           }
         ];
   
@@ -500,7 +506,7 @@
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-                  x: 450, y: 160, dy: -10, dx: 10, color: "gray",
+                  x: 450, y: 160, dy: -10, dx: 10, color: "#444444",
           }
         ];
   
@@ -528,7 +534,7 @@
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-                  x: 650, y: 160, dy: -10, dx: 10, color: "gray",
+                  x: 650, y: 160, dy: -10, dx: 10, color: "#444444",
           }
         ];
   

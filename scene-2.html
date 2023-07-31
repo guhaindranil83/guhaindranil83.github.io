@@ -12,8 +12,9 @@
 <style> 
     rect {stroke: black; }
     button {
-    background-color: gray; 
-    border: 2px solid darkgrey; 
+    background-color: #6c8c86; 
+    border: 2px solid black; 
+    border-radius: 12px;
     color: white;
     padding: 15px 32px;
     text-align: center;
@@ -37,14 +38,15 @@
 </style>
 
 <body>
-  <p style="font-size:24px;"> 
+  <h2 style="font-size:18px; color:#444444"> 
     Scene-2 : How United States administered vaccines to encounter covid-19 over the the covid timeline between Jan 2020 to June 2023?   
-  </p>
+  </h2>
   <p> We plotted the total count of vaccines administered for all states within USA for each month between Jan 2020 and June 2023. This shows the trend and it can be observed 70% of total vaccines were adminsitered during the first half of covid timeline, however delta varriants caused a significant deaths between July to April 2022, post April 2022 the death tolls started flattening out. </p>
   <p> Second chart plots the monthly death counts over covid time line to draw a comparative analysis between vaccines admisnietred vs deaths. See the annotations for more details.</p>
-  <p> => Try hover over the scatter plots to see the exact value of the coordinate. </p>
-<svg width=800 height=600>
-</svg>
+  <p style="color:#293f95"> => Try hover over the scatter plots to see the exact value of the coordinate. </p>
+
+  < <svg width=800 height=600 style="background: #e3e6e5";>
+  </svg>
 
 <script>
 
@@ -111,7 +113,7 @@ var div = d3.select("body").append("div")
           .append("circle")
             .attr("cx", function (d,i) { return x(d.date); } )
             .attr("cy", function (d,i) { return y(d.count); } )
-            .attr("r", 4 )
+            .attr("r", 2 )
             .style("fill", "green")
           .on('mouseover', function (d, i) {
               d3.select(this).transition()
@@ -147,7 +149,7 @@ var div = d3.select("body").append("div")
                     .attr("d", valueline(data))
                     .style("fill", "none")
                     .style("stroke", "green")
-                    .style("stroke-width", "2");
+                    .style("stroke-width", "1");
 
         d3.select('svg')
         .append("g")
@@ -249,7 +251,7 @@ var div = d3.select("body").append("div")
           .append("circle")
             .attr("cx", function (d,i) { return x(d.date); } )
             .attr("cy", function (d,i) { return y(d.count); } )
-            .attr("r", 4 )
+            .attr("r", 2 )
             .style("fill", "#e27c7c")
           .on('mouseover', function (d, i) {
               d3.select(this).transition()
@@ -285,7 +287,7 @@ var div = d3.select("body").append("div")
                     .attr("d", valueline(data))
                     .style("fill", "none")
                     .style("stroke", "#a86464")
-                    .style("stroke-width", "2");
+                    .style("stroke-width", "1");
 
         d3.select('svg')
         .append("g")
@@ -330,7 +332,7 @@ const annotations1 = [
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-            x: 350, y: 150, dy: -10, dx: 200, color: "gray",
+            x: 350, y: 150, dy: -10, dx: 200, color: "#444444",
           }
         ];
   
@@ -358,7 +360,7 @@ const annotations1 = [
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-            x: 110, y: 400, dy: -10, dx: 10, color: "gray",
+            x: 110, y: 400, dy: -10, dx: 10, color: "#444444",
           }
         ];
   
@@ -386,7 +388,7 @@ const annotations1 = [
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-            x: 260, y: 320, dy: 10, dx: 10, color: "gray",
+            x: 260, y: 320, dy: 10, dx: 10, color: "#444444",
           }
         ];
   
@@ -414,7 +416,7 @@ const annotations1 = [
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-            x: 460, y: 350, dy: 10, dx: 10, color: "gray",
+            x: 460, y: 350, dy: 10, dx: 10, color: "#444444",
           }
         ];
   
@@ -442,7 +444,7 @@ const annotations1 = [
             //points: 3,      //Number of break in the curve
             lineType : "horizontal"
                   }, 
-            x: 650, y: 460, dy: -10, dx: 10, color: "gray",
+            x: 650, y: 460, dy: -10, dx: 10, color: "#444444",
           }
         ];
   

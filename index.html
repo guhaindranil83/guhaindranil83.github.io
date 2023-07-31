@@ -6,12 +6,13 @@
 <button onclick="document.location='index.html'" autofocus>scene-1</button>
 <button onclick="document.location='scene-2.html'" autofocus>scene-2</button>
 <button onclick="document.location='scene-3.html'" autofocus>scene-3</button>
-
+<!-- #466964 -->
 <style> 
 rect {stroke: black; opacity: .8;}
 button {
-    background-color: gray; 
-    border: 2px solid darkgray; 
+    background-color: #6c8c86; 
+    border: 2px solid black; 
+    border-radius: 12px;
     color: white;
     padding: 15px 32px;
     text-align: center;
@@ -35,14 +36,14 @@ button {
 
 </style>
 <body>
-    <p style="font-size:24px;"> 
+    <h2 style="font-size:18px; color:#444444"> 
       Scene-1 : Covid-19 Death Toll within United States. Which age group receive the most fatality? What is most common medical condition involved in covid death?   
-    </p>
+    </h2>
     <p>First bar chart zooms into the US provisional data on covid deaths and break down by age group to understand the highest and least effected population due to covid-19 deaths. 77% of deaths are within 65+ age group, only 1% of deaths reported within 0-34 age group showing kids and young adults were not severely effected.</p>
     <p>Second bar chart looks into different medical conditions involved in deaths due to Covid-19. With about 39% of inconclsive data about underlying medical conditions, it can be observed Resiporatory, Circulary diseases has been the most common conditions for covid deaths. </p>
-    <p> => Try hover over the bars to see the percentage breahdowns. </p>
+    <p style="color:#293f95"> => Try hover over the bars to see the percentage breakdowns. </p>
 
-<svg width=800 height=600>
+    <svg width=800 height=600 style="background: #e3e6e5";>
 </svg>
 
 <script>
@@ -121,8 +122,33 @@ button {
 
 //var color = ["#0000b3", "#0010d9", "#0020ff", "#0040ff", "#0060ff", "#0080ff", "#009fff"] 
 var color = ["#e27c7c", "#a86464", "#6d4b4b", "#503f3f", "#333333", "#3c4e4b", "#466964"]
-var color1 = ["#619ED6", "#6BA547", "#F7D027", "#E48F1B", "#B77EA3", "#E64345", "#60CEED", "#9CF168", "#F7EA4A", "#FBC543", "#FFC9ED"] //, "#E6696E"}
+//var color = ["#115f9a", "#1984c5", "#22a7f0", "#48b5c4", "#76c68f", "#a6d75b", "#c9e52f"]
+//var color1 = ["#619ED6", "#6BA547", "#F7D027", "#E48F1B", "#B77EA3", "#E64345", "#60CEED", "#9CF168", "#F7EA4A", "#FBC543", "#FFC9ED"] //, "#E6696E"}
 //var color = ["#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45"]
+//var color1 = ["#16537e",
+// "#2d648a",
+// "#447597",
+// "#5b86a4",
+// "#7397b1",
+// "#8aa9be",
+// "#a1bacb",
+// "#b9cbd8",
+// "#d0dce5",
+// "#e7edf2",
+// "#ffffff"]
+
+var color1 = ["#ce7e00",
+"#d28a19",
+"#d79732",
+"#dca44c",
+"#e1b166",
+"#e6be7f",
+"#ebcb99",
+"#f0d8b2",
+"#f5e5cc",
+"#faf2e5",
+"#ffffff"]
+
 
 // var x = d3.scaleBand().domain(data.map(function(d) { return d.age; })).range([0,400]);
 // var y = d3.scaleLinear().domain([0, d3.max(data, function(d) { return d.totdeaths; })]).range([400,0]);
@@ -218,7 +244,7 @@ d3.select('svg')
     .on('mouseover', function (d, i) {
               d3.select(this).transition()
                .duration('50')
-               .attr('opacity', '.85');
+               .attr('opacity', '1.5');
               div.transition()
                .duration(50)
                .style("opacity", 1);
@@ -230,7 +256,7 @@ d3.select('svg')
           .on('mouseout', function (d, i) {
               d3.select(this).transition()
                .duration('50')
-               .attr('opacity', '1');
+               .attr('opacity', '.85');
               div.transition()
                .duration('50')
                .style("opacity", 0);
@@ -282,7 +308,7 @@ d3.select('svg')
             lineType : "horizontal"
       },
       x: 550, y: 80, dy: 10, dx: 10,
-      color: "gray"
+      color: "#444444"
       // type: d3.annotationCalloutCircle,
       // subject: { radius: 30, radiusPadding: 1 }
       // type: d3.annotationCalloutRect,
@@ -318,7 +344,7 @@ d3.select('svg')
             lineType : "horizontal"
       },
       x: 560, y: 350, dy: 5, dx: 10,
-      color: "gray",
+      color: "#444444"
       //type: d3.annotationCalloutCircle,
       //subject: { radius: 30, radiusPadding: 1 }
     }
