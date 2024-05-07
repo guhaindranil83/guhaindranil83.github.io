@@ -1,4 +1,4 @@
-CS416 Narrative Visualization Project Essay
+CS416 Narrative Visualization Project 
 
 Created by : Indranil Guha (ID: IGUHA4)
 
